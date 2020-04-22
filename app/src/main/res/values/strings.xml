@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Fall_Dectection</string>
+    <string name="Map_Button_send">Your location</string>
+    <string name="Email_Button_send">Email</string>
+    <string name="Map_key" translatable="false">AIzaSyA6YxCFWFwOS2W0VhjvkuGWzm11kR6T3XM</string>
+
+</resources>
