@@ -136,7 +136,7 @@ public class SharedPreferenceActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot snapshot) {
                 if (!snapshot.hasChild(initEmail)) {
                     User user = new User(email, 0, 0, address, Integer.valueOf(weight).intValue(), phone);
-                    ref.child("users").child(initEmail).setValue(user);
+                    ref.child(initEmail).setValue(user);
 
                 }
                 else {
