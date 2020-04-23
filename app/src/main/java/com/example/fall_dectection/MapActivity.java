@@ -35,6 +35,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import android.location.Location;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -82,6 +83,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_map);
 
         EditText_Home_Location = (EditText) findViewById(R.id.EditText_Home_Location);
+        String location = EditText_Home_Location.getText().toString();
+        Log.d("Location", location);
 
 
         SharedPreferenceActivity sharedPreferenceActivity = new SharedPreferenceActivity();
@@ -95,8 +98,8 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             @Override
             public void onClick(View View) {
                 GeoLocate_onCLick(View);
-                String url = getUrl(acc_Marker.getPosition(),det_marker.getPosition(),"driving");
-                new FetchURL(MapActivity.this).execute(getUrl(acc_Marker.getPosition(), det_marker.getPosition(), "driving"), "driving");
+                String url = getUrl(acc_Marker.getPosition(), det_marker.getPosition(), "driving");
+                new FetchURL(MapActivity.this).execute(getUrl(acc_Marker.getPosition(), det_marker.getPosition(),"driving"), "driving");
                 //new FetchURL(MapActivity.this).execute(url,"driving");
             }
         });
@@ -108,31 +111,36 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     }
 
     public void GeoLocate_onCLick(View v) {
+        mMap.clear();
 
         hideSoftKeyboard(v);
 
         String location = EditText_Home_Location.getText().toString();
-        Geocoder geocoder = new Geocoder(this);
+        Log.d("Location", location);
+        if(location == null){
 
+            Toast.makeText(this, "Please Enter a Location", Toast.LENGTH_LONG).show();
+        }
+        Geocoder geocoder = new Geocoder(this);
+        Log.d("Location", location);
         List<Address> list = null;
         try {
-            list = geocoder.getFromLocationName(location,1);
+            list = geocoder.getFromLocationName(location, 1);
             Address address = list.get(0);
             home_location_lat = address.getLatitude();
             home_location_long = address.getLongitude();
-            String locality = address.getLocality();
-            Toast.makeText(this,"Go to "+locality,Toast.LENGTH_LONG).show();
+            String locality = address.getFeatureName();
+            Toast.makeText(this, "Go to " + locality, Toast.LENGTH_LONG).show();
 
             //set the finial address
-            //LatLng Destination_latLng = new LatLng(home_location_lat,Curr_location_long);
-            //mMap.addMarker(new MarkerOptions().position(Destination_latLng).title("Destination"));
+            LatLng Destination_latLng = new LatLng(home_location_lat, home_location_long);
+            mMap.addMarker(new MarkerOptions().position(Destination_latLng).title("Destination"));
             //mMap.moveCamera(CameraUpdateFactory.newLatLng(Destination_latLng));
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        det_marker = new MarkerOptions().position(new LatLng(home_location_lat, home_location_long)).title("Destination");
+            det_marker = new MarkerOptions().position(new LatLng(home_location_lat, home_location_long)).title("Destination");
     }
 
     private void hideSoftKeyboard(View v) {

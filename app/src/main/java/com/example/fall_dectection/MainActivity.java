@@ -13,8 +13,10 @@ package com.example.fall_dectection;
  * Layoutfile:activity_main.xml
  * */
 
+import androidx.appcompat.app.AppCompatActivity;
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -36,14 +38,22 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.content.SharedPreferences;
+import android.content.DialogInterface;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import com.example.fall_dectection.User;
+import com.google.firebase.database.ValueEventListener;
 
-public class MainActivity extends Activity implements SensorEventListener {
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     //get access to sensors
     private SensorManager mSensorManager;
@@ -117,9 +127,13 @@ public class MainActivity extends Activity implements SensorEventListener {
     private Button Data_Button;
 
     static boolean Send_Email_flag = true;
+    static boolean NeedHelp = true;
     public double tlat;
     public double tlong;
     private static String Address_name;
+    public String email = "";
+    public String phone = "";
+    public String address = "";
 
 
     //location:
@@ -150,7 +164,19 @@ public class MainActivity extends Activity implements SensorEventListener {
 
         SharedPreferenceActivity sharedPreferenceActivity = new SharedPreferenceActivity();
         String Data_Weight = sharedPreferenceActivity.return_User_weight();
-        weight = Integer.valueOf(Data_Weight).intValue();
+        email = sharedPreferenceActivity.return_Carer_email();
+        phone = sharedPreferenceActivity.return_Carer_phone();
+        address = sharedPreferenceActivity.return_Home_address();
+
+        if(email == ""){
+            Intent intent = new Intent(MainActivity.this, SharedPreferenceActivity.class);
+            startActivity(intent);
+            finish();
+        }
+        else {
+            weight = Integer.valueOf(Data_Weight).intValue();
+            initializeFirebase(email, phone, address, weight);
+        }
 
 
         //file to initial all the sensor and sensormanager data
@@ -191,6 +217,33 @@ public class MainActivity extends Activity implements SensorEventListener {
         locatino_oncreat();
     }
 
+    public void initializeFirebase(String email, String phone, String address, final int weight){
+        final String initEmail = email.split("@")[0];
+        final String storeEmail = email;
+        final String initAddress = address;
+        final String initPhone = phone;
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference ref = database.getReference("users");
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if (!snapshot.hasChild(initEmail)) {
+                    User user = new User(storeEmail, 0, 0, initAddress, weight, initPhone);
+                    ref.child("users").child(initEmail).setValue(user);
+
+                }
+                else {
+                    ref.child(initEmail).child("email").setValue(storeEmail);
+                    ref.child(initEmail).child("phone").setValue(initPhone);
+                    ref.child(initEmail).child("address").setValue(initAddress);
+                    ref.child(initEmail).child("weight").setValue(weight);
+                }
+            }
+            public void  onCancelled(DatabaseError dbError){
+
+            }
+        });
+    }
 
 
     private void locatino_oncreat() {
@@ -238,6 +291,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     class mylocationlistener implements LocationListener {
         @Override
         public void onLocationChanged(Location location) {
+            Log.d("LOCATION", location.toString());
             if (location != null) {
                 tlat = location.getLatitude();
                 tlong = location.getLongitude();
@@ -276,6 +330,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Log.d("ADDRESS", address_name);
         return  address_name;
     }
 
@@ -353,14 +408,29 @@ public class MainActivity extends Activity implements SensorEventListener {
             MagnitudePrevious = sum_acc;
             if (mag_delta > 6 ){
                 stepCount++;
-                //Log.d("X-ACC", String.valueOf(acc_x));
-                //Log.d("Y-ACC", String.valueOf(acc_y));
-                //Log.d("Z-ACC", String.valueOf(acc_z));
-                Log.d("STEPSUM", String.valueOf(mag_delta));
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                final String initEmail;
+                if(email != "")
+                   initEmail = email.split("@")[0];
+                else
+                    initEmail = "";
+                final DatabaseReference ref = database.getReference("users/"+initEmail);
+                ref.addListenerForSingleValueEvent(new ValueEventListener() {
+
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        int prevStep = snapshot.getValue(User.class).steps;
+                        steps.setText(prevStep+" Steps Taken");
+                        ref.child("steps").setValue(prevStep + 1);
+
+                    }
+                    public void  onCancelled(DatabaseError dbError){
+                        Log.w("DBERROR", "loadPost:onCancelled", dbError.toException());
+                    }
+                });
+
             }
-            //Log.d("Y-ACC", String.valueOf(acc_y));
-            //Log.d("Z-ACC", String.valueOf(acc_z));
-            steps.setText("Steps: "+stepCount);
+
             last_x = acc_x;
             last_y = acc_y;
             last_z = acc_z;
@@ -419,11 +489,11 @@ public class MainActivity extends Activity implements SensorEventListener {
             threshold_force = 143.25;
         }
 
-        if ((Average_ACC >=0 && Average_ACC< 0.15) && (Average_GYRO >=0 && Average_GYRO < 0.01)){
-            mag_Movement.setText("Non Movement");
+        if ((Average_ACC >=0 && Average_ACC< 0.3) && (Average_GYRO >=0 && Average_GYRO < 0.01)){
+            mag_Movement.setText("Not Moving");
         }
-        else if ((Average_ACC >= 0.15 && Average_ACC < 0.66) && (Average_GYRO >=0.01 && Average_GYRO < 0.07)){
-            mag_Movement.setText("Change of Movement");
+        else if ((Average_ACC >= 0.35 && Average_ACC < 0.66) && (Average_GYRO >=0.01 && Average_GYRO < 0.07)){
+            mag_Movement.setText("Movement Detected");
         }
         else if ((Average_ACC >=0.66 && Average_ACC < 4.26) && (Average_GYRO >=0.07 && Average_GYRO < 0.26)){
             mag_Movement.setText("Constantly Moving");
@@ -432,14 +502,40 @@ public class MainActivity extends Activity implements SensorEventListener {
             mag_Movement.setText("Over Threshold !!");
         }
         else if ((mag_avg_z_axis > 8 || mag_avg_z_axis < -8) && (Average_GYRO >=2) && (FORCE >= threshold_force)){
-            Log.d("FALLING DELTA", String.valueOf(mag_avg_z_axis));
             mag_Movement.setText("Falling Down!!");
-            final Toast toast = Toast.makeText(this,"Falling Down",Toast.LENGTH_SHORT);
-            toast.show();
-            if(Send_Email_flag){
-                Send_Email_flag = false;
-                //FAll_Down_Email_Send_Timer.start();
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setMessage("Fall Detected! Do you need help?").setPositiveButton("Yes", dialogClickListener)
+                    .setNegativeButton("No", dialogClickListener).show();
+        }
+    }
+
+    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which){
+                case DialogInterface.BUTTON_POSITIVE:
+                    NeedHelp = true;
+                    if (Send_Email_flag) {
+                        Send_Email_flag = false;
+                        FAll_Down_Email_Send_Timer.start();
+                    }
+                    dialog.dismiss();
+                    break;
+
+                case DialogInterface.BUTTON_NEGATIVE:
+                    NeedHelp = false;
+                    dialog.dismiss();
+                    break;
             }
+        }
+    };
+
+    //This module is used to count down 30 seconds and trigger the function of sending emails.
+    private CountDownTimer FAll_Down_Email_Send_Timer = new CountDownTimer(20000, 1000) {
+        @Override
+        public void onTick(long millisUntilFinished) {
+            final Toast toast = Toast.makeText(getApplicationContext(),"Email wil be sent in 20 seconds!",Toast.LENGTH_SHORT);
+            toast.show();
             new android.os.Handler().postDelayed(
                     new Runnable() {
                         public void run() {
@@ -448,25 +544,17 @@ public class MainActivity extends Activity implements SensorEventListener {
                     },
                     3000);
         }
-    }
-
-    //This module is used to count down 30 seconds and trigger the function of sending emails.
-    private CountDownTimer FAll_Down_Email_Send_Timer = new CountDownTimer(20000, 1000) {
-        @Override
-        public void onTick(long millisUntilFinished) {
-            Toast.makeText(getApplicationContext(),"Email wil be send in 20 seconds!",Toast.LENGTH_SHORT).show();
-        }
         @Override
         public void onFinish() {
             //Set the Serializable
-            Intent_data_share intent_data_share = new Intent_data_share(tlat,tlong,Address_name);
-            //Switch to the Email Activity module
-            Intent intent = new Intent(MainActivity.this, EmailActivity.class);
-            intent.putExtra("Fall_Down_Trigger", 30);
-            //send the data from email activity by using Serializable
-            intent.putExtra("intent_share", intent_data_share);
-            startActivity(intent);
-            Send_Email_flag = true;
+                Intent_data_share intent_data_share = new Intent_data_share(tlat, tlong, Address_name);
+                //Switch to the Email Activity module
+                Intent intent = new Intent(MainActivity.this, EmailActivity.class);
+                intent.putExtra("Fall_Down_Trigger", 30);
+                //send the data from email activity by using Serializable
+                intent.putExtra("intent_share", intent_data_share);
+                startActivity(intent);
+                Send_Email_flag = true;
         }
     };
 
@@ -538,4 +626,5 @@ public class MainActivity extends Activity implements SensorEventListener {
         locationManager.requestLocationUpdates(bestprovider, 0, 0, locationListener);
     }
 }
+
 

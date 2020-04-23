@@ -39,7 +39,6 @@
             android:id="@+id/EditText_User_weight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:layout_weight="1"
             android:background="@drawable/bg_round"
             android:hint="Weight"
@@ -76,75 +75,38 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:orientation="horizontal">
+        android:layout_height="50dp">
 
         <EditText
             android:id="@+id/EditText_Carer_phone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Carer Phone"
-            android:padding="12dp"
             android:layout_marginTop="8dp"
             android:layout_weight="1"
-            android:background="@drawable/bg_round"/>
+            android:background="@drawable/bg_round"
+            android:hint="Carer Phone"
+            android:padding="12dp" />
+
         <Switch
             android:id="@+id/Switch_Carer_phone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center_vertical"/>
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1" />
+
     </LinearLayout>
-
-
-
-
-
-
-    <Button
-        android:id="@+id/Button_message_Applied"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Applied"
-        android:layout_marginTop="8dp"/>
-
-
 
     <Button
         android:id="@+id/Button_message_Saved"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Save"
-        android:layout_marginTop="8dp"/>
+        android:text="Save" />
 
-
-    <TextView
-        android:text="Stored message:"
-        android:layout_width="fill_parent"
+    <Button
+        android:id="@+id/main_page"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"/>
+        android:text="Go to Main Page" />
 
-    <TextView
-        android:id="@+id/text_Home_address"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
 
-    <TextView
-        android:id="@+id/text_User_weight"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
-
-    <TextView
-        android:id="@+id/text_Carer_email"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
-
-    <TextView
-        android:id="@+id/text_Carer_phone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"/>
 </LinearLayout>

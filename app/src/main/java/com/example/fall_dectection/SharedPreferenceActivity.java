@@ -22,6 +22,12 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 public class SharedPreferenceActivity extends AppCompatActivity {
 
     private TextView text_Home_address;
@@ -35,7 +41,7 @@ public class SharedPreferenceActivity extends AppCompatActivity {
     private EditText EditText_Carer_phone;
 
     private Button Button_message_Saved;
-    private Button Button_message_Applied;
+    private Button Button_main_page;
 
     private Switch Switch_Home_address;
     private Switch Switch_User_weight;
@@ -59,14 +65,14 @@ public class SharedPreferenceActivity extends AppCompatActivity {
     public static final String SWITCH_Carer_email = "Carer_email_Saved";
     public static final String SWITCH_Carer_phone = "Carer_phone_Saved";
 
-    private String Home_address = "London";
-    private String User_weight = "80";
-    private String Carer_email = "s1936286@ed.ac.uk";
+    private String Home_address = "";
+    private String User_weight = "";
+    private String Carer_email = "";
     private String Carer_phone = "";
 
-    private static String return_Home_address  = "London";
-    private static String return_User_weight  = "80";
-    private static String return_Carer_email  = "s1936286@ed.ac.uk";
+    private static String return_Home_address  = "";
+    private static String return_User_weight  = "";
+    private static String return_Carer_email  = "";
     private static String return_Carer_phone  = "";
 
     private boolean switchOnOff_Home_address;
@@ -80,10 +86,6 @@ public class SharedPreferenceActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_shared_preference);
 
-        text_Home_address= (TextView) findViewById(R.id.text_Home_address);
-        text_User_weight = (TextView) findViewById(R.id.text_User_weight);
-        text_Carer_email = (TextView) findViewById(R.id.text_Carer_email);
-        text_Carer_phone = (TextView) findViewById(R.id.text_Carer_phone);
 
         EditText_Home_address = (EditText) findViewById(R.id.EditText_Home_address);
         EditText_User_weight = (EditText) findViewById(R.id.EditText_User_weight);
@@ -91,20 +93,18 @@ public class SharedPreferenceActivity extends AppCompatActivity {
         EditText_Carer_phone = (EditText) findViewById(R.id.EditText_Carer_phone);
 
         Button_message_Saved = (Button) findViewById(R.id.Button_message_Saved);
-        Button_message_Applied = (Button) findViewById(R.id.Button_message_Applied);
+        Button_main_page = (Button) findViewById(R.id.main_page);
 
         Switch_Home_address = (Switch) findViewById(R.id.Switch_Home_address);
         Switch_User_weight = (Switch) findViewById(R.id.Switch_User_weight);
         Switch_Carer_email = (Switch) findViewById(R.id.Switch_Carer_email);
         Switch_Carer_phone = (Switch) findViewById(R.id.Switch_Carer_phone);
 
-        Button_message_Applied.setOnClickListener(new View.OnClickListener() {
+        Button_main_page.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View View) {
-                text_Home_address.setText(EditText_Home_address.getText().toString());
-                text_User_weight.setText(EditText_User_weight.getText().toString());
-                text_Carer_email.setText(EditText_Carer_email.getText().toString());
-                text_Carer_phone.setText(EditText_Carer_phone.getText().toString());
+                Intent intent = new Intent(SharedPreferenceActivity.this, MainActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -112,10 +112,45 @@ public class SharedPreferenceActivity extends AppCompatActivity {
             @Override
             public void onClick(View View) {
                 Data_save();
+                saveToFireBase();
             }
         });
         Data_load();
+        EditText_Home_address.setText(Home_address);
+        EditText_Carer_email.setText(Carer_email);
+        EditText_Carer_phone.setText(Carer_phone);
+        EditText_User_weight.setText(User_weight);
         Data_updata();
+    }
+
+    private  void saveToFireBase(){
+        final String address = EditText_Home_address.getText().toString();
+        final String weight = EditText_User_weight.getText().toString();
+        final String email = EditText_Carer_email.getText().toString();
+        final String phone = EditText_Carer_phone.getText().toString();
+        final String initEmail = email.split("@")[0];
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference ref = database.getReference("users");
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if (!snapshot.hasChild(initEmail)) {
+                    User user = new User(email, 0, 0, address, Integer.valueOf(weight).intValue(), phone);
+                    ref.child("users").child(initEmail).setValue(user);
+
+                }
+                else {
+                    ref.child(initEmail).child("email").setValue(email);
+                    ref.child(initEmail).child("phone").setValue(phone);
+                    ref.child(initEmail).child("address").setValue(address);
+                    ref.child(initEmail).child("weight").setValue(Integer.valueOf(weight).intValue());
+                }
+            }
+            public void  onCancelled(DatabaseError dbError){
+
+            }
+        });
+
     }
 
     //this module is used to store the data in the SharedPreferences
@@ -130,11 +165,11 @@ public class SharedPreferenceActivity extends AppCompatActivity {
         SharedPreferences.Editor SHARED_Carer_email_editor = SHARED_Carer_email_haredPreferences.edit();
         SharedPreferences.Editor SHARED_Carer_phone_editor = SHARED_Carer_phone_haredPreferences.edit();
 
+        SHARED_Home_address_editor.putString(TEXT_Home_address, EditText_Home_address.getText().toString());
+        SHARED_User_weight_editor.putString(TEXT_User_weight, EditText_User_weight.getText().toString());
+        SHARED_Carer_email_editor.putString(TEXT_Carer_email, EditText_Carer_email.getText().toString());
+        SHARED_Carer_phone_editor.putString(TEXT_Carer_phone, EditText_Carer_phone.getText().toString());
 
-        SHARED_Home_address_editor.putString(TEXT_Home_address, text_Home_address.getText().toString());
-        SHARED_User_weight_editor.putString(TEXT_User_weight, text_User_weight.getText().toString());
-        SHARED_Carer_email_editor.putString(TEXT_Carer_email, text_Carer_email.getText().toString());
-        SHARED_Carer_phone_editor.putString(TEXT_Carer_phone, text_Carer_phone.getText().toString());
 
         SHARED_Home_address_editor.putBoolean(SWITCH_Home_address, Switch_Home_address.isChecked());
         SHARED_User_weight_editor.putBoolean(SWITCH_User_weight, Switch_User_weight.isChecked());
@@ -148,7 +183,7 @@ public class SharedPreferenceActivity extends AppCompatActivity {
         SHARED_Carer_email_editor.apply();
         SHARED_Carer_phone_editor.apply();
 
-        Toast.makeText(this, "Data up load data", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Data upload successfull", Toast.LENGTH_SHORT).show();
     }
 
     //this module is used to load the data
@@ -172,10 +207,6 @@ public class SharedPreferenceActivity extends AppCompatActivity {
 
     //this module is used to upload the data
     private void Data_updata() {
-        text_Home_address.setText(Home_address);
-        text_User_weight.setText(User_weight);
-        text_Carer_email.setText(Carer_email);
-        text_Carer_phone.setText(Carer_phone);
 
         return_Home_address  = Home_address;
         return_User_weight  = User_weight;

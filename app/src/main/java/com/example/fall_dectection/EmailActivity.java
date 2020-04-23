@@ -60,7 +60,7 @@ public class EmailActivity extends AppCompatActivity {
         Button_Email_Send = findViewById(R.id.Button_Email_Send);
 
         //Sender Email Set
-        String_Account_Address = "edwirelessgroup@gmail.com ";
+        String_Account_Address = "edwirelessgroup@gmail.com";
         String_Account_Password = "Edwireless.";
 
         //Send mail manually

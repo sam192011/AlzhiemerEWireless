@@ -21,15 +21,17 @@
             android:text="Go to:"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <EditText
-        android:id="@+id/EditText_Home_Location"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:layout_weight="0.8"
-        android:ems="10">
-        <requestFocus/>
-    </EditText>
+        <EditText
+            android:id="@+id/EditText_Home_Location"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_weight="0.8"
+            android:ems="10"
+            android:hint="Enter a Destination">
+
+            <requestFocus />
+        </EditText>
     </LinearLayout>
 
 

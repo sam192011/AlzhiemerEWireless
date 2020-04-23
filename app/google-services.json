@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "973524227181",
+    "firebase_url": "https://alzhiemerapp.firebaseio.com",
+    "project_id": "alzhiemerapp",
+    "storage_bucket": "alzhiemerapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:973524227181:android:d282198c518dc8fa28db64",
+        "android_client_info": {
+          "package_name": "com.example.fall_dectection"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "973524227181-dmq47rkrbab6o6dru920ijqu8rqgjt29.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCu_QrZV3JmXzli0lif34p59JkV53cWuIY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "973524227181-dmq47rkrbab6o6dru920ijqu8rqgjt29.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
